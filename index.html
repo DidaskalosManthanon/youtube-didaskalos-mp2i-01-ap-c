@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP2I Informatique — 1.1 Algorithmes et Programmes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     ÉCRAN D'AUTHENTIFICATION
+════════════════════════════════════════════════ -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="auth-logo-bracket">{</span>
+      <span class="auth-logo-text">MP2I</span>
+      <span class="auth-logo-bracket">}</span>
+    </div>
+    <div class="auth-title">Accès sécurisé</div>
+    <p class="auth-subtitle">Entrez le mot de passe pour accéder au cours.</p>
+    <div class="auth-input-wrap" id="authInputWrap">
+      <input
+        type="password"
+        id="authInput"
+        class="auth-input"
+        placeholder="Mot de passe"
+        autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') checkAuth()"
+      >
+      <button class="auth-btn" onclick="checkAuth()">
+        <span>Entrer</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="auth-error" id="authError">Mot de passe incorrect.</div>
+    <div class="auth-hint">
+      <span class="auth-hint-icon">🔒</span>
+      Ressource réservée aux élèves de la classe MP2I.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     NAVBAR FIXE
+════════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#" onclick="scrollToTop()">
+      <span class="nav-brand-bracket">{</span>1.1<span class="nav-brand-bracket">}</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a class="nav-link" href="#card1" onclick="navGoTo('card1')">
+        <span class="nav-num">01</span><span class="nav-label">Programme</span>
+      </a>
+      <a class="nav-link" href="#card2" onclick="navGoTo('card2')">
+        <span class="nav-num">02</span><span class="nav-label">Cours</span>
+      </a>
+      <a class="nav-link" href="#card3" onclick="navGoTo('card3')">
+        <span class="nav-num">03</span><span class="nav-label">Exercices</span>
+      </a>
+      <a class="nav-link" href="#card4" onclick="navGoTo('card4')">
+        <span class="nav-num">04</span><span class="nav-label">Quiz</span>
+      </a>
+      <a class="nav-link" href="#card5" onclick="navGoTo('card5')">
+        <span class="nav-num">05</span><span class="nav-label">Contact</span>
+      </a>
+    </div>
+    <button class="nav-burger" id="navBurger" onclick="toggleNavMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+
+<div class="page" id="mainContent">
+
+  <!-- HEADER -->
+  <header>
+    <div class="breadcrumb">
+      MP2I / MPI — Informatique
+      <span>›</span> 1. Méthodes de programmation
+      <span>›</span> 1.1 Algorithmes et programmes
+    </div>
+    <h1>Algorithmes<br>et <em>Programmes</em></h1>
+    <p class="subtitle">Paradigmes de programmation, validité des algorithmes, complexité et représentation des flottants — les fondations de l'informatique théorique et pratique.</p>
+    <div class="tag-row">
+      <a href="#card1" class="tag tag-green" onclick="openAndScroll('card1')">S1 — Premier semestre</a>
+      <a href="#card3" class="tag tag-blue" onclick="openAndScroll('card3')">C &amp; OCaml</a>
+      <a href="#card2" class="tag tag-pink" onclick="openAndScroll('card2')">Algorithmique</a>
+      <a href="https://prepas.org/ups.php?document=73" class="tag tag-yellow" target="_blank" rel="noopener noreferrer">Programme officiel 2021 ↗</a>
+    </div>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-header">
+    <div class="progress-info"><strong>Progression</strong><br>Section 1.1</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-info" id="progressText" style="text-align:right;">0 / 5 vus</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 1 : PROGRAMME OFFICIEL (NOTIONS)
+  ════════════════════════════════════════════════ -->
+  <div class="section-card" id="card1">
+    <div class="section-header" onclick="toggleCard('card1')">
+      <div class="section-number">01</div>
+      <div class="section-title">Notions du programme officiel</div>
+      <div class="section-chevron"></div>
+    </div>
+    <div class="section-body">
+      <p style="margin-top:14px;">Le tableau ci-dessous reprend <strong>exactement</strong> les notions et commentaires du programme officiel (<a href="https://prepas.org/ups.php?document=73" target="_blank" rel="noopener noreferrer">BO 2021</a>) pour la section 1.1.</p>
+      <table class="notion-table">
+        <thead>
+          <tr>
+            <th>Notion</th>
+            <th>Commentaires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="notion-name">Notion de programme comme mise en œuvre d'un algorithme<br><br>Paradigme impératif structuré, déclaratif fonctionnel, logique</td>
+            <td class="notion-comment">On ne présente pas de théorie générale sur les paradigmes de programmation ; on se contente d'observer les paradigmes employés sur des exemples. La notion de saut inconditionnel (<code>goto</code>) est hors programme. On mentionne le paradigme logique uniquement à l'occasion de la présentation des bases de données.</td>
+          </tr>
+          <tr>
+            <td class="notion-name">Caractère compilé ou interprété d'un langage</td>
+            <td class="notion-comment">Transformation d'un fichier texte source en un fichier objet puis en un fichier exécutable. Différence entre fichiers d'interface et fichiers d'implémentation.</td>
+          </tr>
+          <tr>
+            <td class="notion-name">Représentation des flottants<br>Problèmes de précision des calculs flottants</td>
+            <td class="notion-comment">On illustre l'impact de la représentation par des exemples de divergence entre le calcul théorique d'un algorithme et les valeurs calculées par un programme. Les comparaisons entre flottants prennent en compte la précision.</td>
+          </tr>
+          <tr>
+            <td class="notion-name">Terminaison, Correction partielle, Correction totale, Variant, Invariant</td>
+            <td class="notion-comment">La correction est partielle quand le résultat est correct lorsque l'algorithme s'arrête ; la correction est totale si elle est partielle et si l'algorithme termine.</td>
+          </tr>
+          <tr>
+            <td class="notion-name">Analyse de la complexité d'un algorithme<br>Complexité dans le pire cas, dans le cas moyen<br>Notion de coût amorti</td>
+            <td class="notion-comment">On limite l'étude de la complexité dans le cas moyen et du coût amorti à quelques exemples simples.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 2 : COURS THÉORIQUE
+  ════════════════════════════════════════════════ -->
+  <div class="section-card" id="card2">
+    <div class="section-header" onclick="toggleCard('card2')">
+      <div class="section-number">02</div>
+      <div class="section-title">Rappels de cours</div>
+      <div class="section-chevron"></div>
+    </div>
+    <div class="section-body">
+
+      <!-- 2.1 Paradigmes -->
+      <div class="section-label">2.1 — Paradigmes de programmation</div>
+      <p>Un <strong>algorithme</strong> est une suite finie d'instructions non ambiguës permettant de résoudre un problème. Un <strong>programme</strong> est la mise en œuvre concrète d'un algorithme dans un langage de programmation donné.</p>
+
+      <div class="paradigm-grid">
+        <div class="paradigm-card">
+          <div class="paradigm-icon">⚙️</div>
+          <div class="paradigm-name">Impératif structuré</div>
+          <div class="paradigm-desc">On décrit <em>comment</em> faire les calculs : séquences d'instructions, conditions, boucles. L'état de la mémoire évolue au fil de l'exécution.</div>
+          <span class="paradigm-lang">C — langage de prédilection</span>
+        </div>
+        <div class="paradigm-card">
+          <div class="paradigm-icon">λ</div>
+          <div class="paradigm-name">Déclaratif fonctionnel</div>
+          <div class="paradigm-desc">On décrit <em>quoi</em> calculer via des fonctions pures et la récursion. Pas d'effets de bord, l'état mutable est évité autant que possible.</div>
+          <span class="paradigm-lang">OCaml — fonctionnel par défaut</span>
+        </div>
+        <div class="paradigm-card">
+          <div class="paradigm-icon">🗃️</div>
+          <div class="paradigm-name">Logique</div>
+          <div class="paradigm-desc">On exprime des faits et des règles ; le système déduit les réponses. Mentionné uniquement dans le contexte des bases de données (SQL).</div>
+          <span class="paradigm-lang">SQL (Prolog hors programme)</span>
+        </div>
+      </div>
+
+      <div class="alert-block">
+        <span class="alert-icon">⚠️</span>
+        Hors programme : toute théorie générale des paradigmes, la notion de saut inconditionnel (<code>goto</code>).
+      </div>
+
+      <!-- 2.2 Compilé vs Interprété -->
+      <div class="section-label">2.2 — Compilé vs interprété</div>
+      <div class="theory-block">
+        <div class="def-title">Chaîne de compilation (C)</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          <strong>Source (.c)</strong> → préprocesseur → <strong>Objet (.o)</strong> → éditeur de liens → <strong>Exécutable</strong><br>
+          Les fichiers <code>.h</code> (interface) déclarent les types et signatures ; les fichiers <code>.c</code> (implémentation) fournissent les définitions.
+        </p>
+      </div>
+      <div class="theory-block">
+        <div class="def-title">OCaml — compilé ou interprété</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          OCaml peut être utilisé en mode <strong>interprété</strong> (toplevel, <code>ocaml</code>) ou <strong>compilé</strong> vers du bytecode (<code>ocamlc</code>) ou du code natif (<code>ocamlopt</code>).
+        </p>
+      </div>
+
+      <!-- 2.3 Flottants -->
+      <div class="section-label">2.3 — Représentation des flottants (IEEE 754)</div>
+      <p>Un flottant <strong>double précision</strong> (64 bits) est représenté par : 1 bit de signe, 11 bits d'exposant, 52 bits de mantisse. La précision relative est de l'ordre de 10⁻¹⁶.</p>
+
+      <div class="theory-block">
+        <div class="def-title">Conséquences pratiques</div>
+        <ul class="list" style="margin:8px 0 0;">
+          <li>Ne jamais tester <code>a == b</code> avec des flottants : utiliser <code>|a − b| &lt; ε</code>.</li>
+          <li>L'addition flottante n'est <strong>pas associative</strong> : <code>(a+b)+c ≠ a+(b+c)</code> en général.</li>
+          <li>Accumulation d'erreurs dans les boucles longues → utiliser des techniques de compensation (Kahan).</li>
+        </ul>
+      </div>
+
+      <!-- 2.4 Terminaison & Correction -->
+      <div class="section-label">2.4 — Terminaison, correction, variant, invariant</div>
+
+      <div class="theory-block">
+        <div class="def-title">Correction partielle</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          Si l'algorithme <strong>s'arrête</strong>, alors son résultat est correct. (Ne garantit pas la terminaison.)
+        </p>
+      </div>
+      <div class="theory-block">
+        <div class="def-title">Correction totale</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          Correction partielle <strong>ET</strong> terminaison garantie.
+        </p>
+      </div>
+      <div class="theory-block">
+        <div class="def-title">Variant de boucle</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          Expression entière, <strong>strictement décroissante</strong> et minorée par 0 à chaque itération → prouve la <strong>terminaison</strong>.
+        </p>
+      </div>
+      <div class="theory-block">
+        <div class="def-title">Invariant de boucle</div>
+        <p style="margin:0; color:var(--text-dim); font-size:.9rem; line-height:1.7;">
+          Propriété vraie <strong>avant</strong> la boucle, préservée à chaque itération, et qui permet de conclure la <strong>correction</strong> après la boucle.
+        </p>
+      </div>
+
+      <!-- 2.5 Complexité -->
+      <div class="section-label">2.5 — Complexité algorithmique</div>
+      <p>La complexité mesure la <strong>quantité de ressources</strong> (temps, mémoire) utilisée en fonction de la taille de l'entrée n.</p>
+
+      <div class="complexity-grid">
+        <div class="complexity-item">
+          <div class="complexity-class">O(1)</div>
+          <div class="complexity-name">Constante</div>
+          <div class="complexity-ex">accès tableau</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-class">O(log n)</div>
+          <div class="complexity-name">Logarithmique</div>
+          <div class="complexity-ex">dichotomie</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-class">O(n)</div>
+          <div class="complexity-name">Linéaire</div>
+          <div class="complexity-ex">parcours tableau</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-class">O(n log n)</div>
+          <div class="complexity-name">Quasi-linéaire</div>
+          <div class="complexity-ex">tri fusion</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-class">O(n²)</div>
+          <div class="complexity-name">Quadratique</div>
+          <div class="complexity-ex">tri insertion (pire cas)</div>
+        </div>
+        <div class="complexity-item">
+          <div class="complexity-class">O(2ⁿ)</div>
+          <div class="complexity-name">Exponentielle</div>
+          <div class="complexity-ex">force brute SAT</div>
+        </div>
+      </div>
+
+      <div class="alert-block" style="margin-top:16px;">
+        <span class="alert-icon">⚠️</span>
+        L'étude de la complexité en cas moyen et du coût amorti se limite à quelques exemples simples en MP2I.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 3 : EXERCICES
+  ════════════════════════════════════════════════ -->
+  <div class="section-card" id="card3">
+    <div class="section-header" onclick="toggleCard('card3')">
+      <div class="section-number">03</div>
+      <div class="section-title">Exercices — C &amp; OCaml</div>
+      <div class="section-chevron"></div>
+    </div>
+    <div class="section-body">
+
+      <!-- EX 1 -->
+      <div class="section-label">Exercice 1 — Recherche séquentielle</div>
+      <p>Implémentez une recherche linéaire dans un tableau d'entiers. Analysez sa complexité et son invariant.</p>
+
+      <div class="code-tabs" id="ex1-tabs">
+        <button class="code-tab active-c" onclick="switchTab('ex1','c',this)">C</button>
+        <button class="code-tab" onclick="switchTab('ex1','ocaml',this)">OCaml</button>
+      </div>
+
+      <div id="ex1-c" class="code-panel active">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-c">C</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex1-c')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex1-c', 'recherche.c')">↓ .c</button>
+          <button class="btn btn-reset" onclick="resetCode('ex1-c', 'ex1c')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex1-c-editor" spellcheck="false">/* recherche_seq : int[] -> int -> int -> bool
+   Invariant : aucun élément égal à cible dans t[0..i-1]
+   Complexité : O(n) dans le pire cas */
+#include <stdio.h>
+#include <stdbool.h>
+
+bool recherche_seq(int t[], int n, int cible) {
+    for (int i = 0; i < n; i++) {
+        /* Invariant : cible ∉ t[0..i-1] */
+        if (t[i] == cible) return true;
+    }
+    return false;
+}
+
+int main(void) {
+    int t[] = {3, 1, 4, 1, 5, 9, 2, 6};
+    int n = 8;
+    printf("Recherche de 9 : %s\n", recherche_seq(t, n, 9) ? "trouvé" : "absent");
+    printf("Recherche de 3 : %s\n", recherche_seq(t, n, 3) ? "trouvé" : "absent");
+    return 0;
+}</textarea>
+        <div class="code-output" id="ex1-c-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+      <div id="ex1-ocaml" class="code-panel active-ocaml-panel">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-ocaml">OCaml</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex1-ocaml')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex1-ocaml', 'recherche.ml')">↓ .ml</button>
+          <button class="btn btn-reset" onclick="resetCode('ex1-ocaml', 'ex1ocaml')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex1-ocaml-editor" spellcheck="false">(* recherche_seq : 'a array -> 'a -> bool
+   Recherche séquentielle générique
+   Complexité : O(n) *)
+
+let recherche_seq t cible =
+  let n = Array.length t in
+  let i = ref 0 in
+  while !i < n && t.(!i) <> cible do incr i done;
+  !i < n
+
+(* Version récursive sur liste *)
+let rec recherche_lst cible = function
+  | [] -> false
+  | h :: _ when h = cible -> true
+  | _ :: t -> recherche_lst cible t
+
+let () =
+  let t = [| 3; 1; 4; 1; 5; 9; 2; 6 |] in
+  Printf.printf "Recherche de 9 : %b\n" (recherche_seq t 9);
+  Printf.printf "Recherche de 3 : %b\n" (recherche_seq t 3);
+  Printf.printf "Récursif de 7  : %b\n" (recherche_lst 7 [3;1;4;1;5;9;2;6])</textarea>
+        <div class="code-output" id="ex1-ocaml-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+      <!-- EX 2 -->
+      <div class="section-label">Exercice 2 — Précision flottante</div>
+      <p>Illustrez les problèmes de représentation IEEE 754 : non-associativité et erreurs d'arrondi.</p>
+
+      <div class="code-tabs" id="ex2-tabs">
+        <button class="code-tab active-c" onclick="switchTab('ex2','c',this)">C</button>
+        <button class="code-tab" onclick="switchTab('ex2','ocaml',this)">OCaml</button>
+      </div>
+
+      <div id="ex2-c" class="code-panel active">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-c">C</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex2-c')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex2-c', 'flottants.c')">↓ .c</button>
+          <button class="btn btn-reset" onclick="resetCode('ex2-c', 'ex2c')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex2-c-editor" spellcheck="false">/* Démonstration des problèmes de précision flottante */
+#include <stdio.h>
+#include <math.h>
+#include <stdbool.h>
+
+#define EPSILON 1e-10
+
+int main(void) {
+    double a = 0.1, b = 0.2, c = 0.3;
+
+    /* Non-associativité */
+    printf("(a+b)+c = %g\n", (a+b)+c);
+    printf("a+(b+c) = %g\n", a+(b+c));
+
+    /* Comparaison naïve vs ε */
+    printf("\n0.1 + 0.2 == 0.3 ?          %s  (MAUVAIS)\n",
+           (a + b == c) ? "true" : "false");
+    printf("|0.1+0.2 - 0.3| < ε ?       %s  (CORRECT)\n",
+           fabs(a+b-c) < EPSILON ? "true" : "false");
+
+    /* Accumulation d'erreurs */
+    double s = 0.0;
+    for (int i = 0; i < 1000; i++) s += 0.001;
+    printf("\n1000 × 0.001  = %.17f\n", s);
+    printf("Erreur        = %.3e\n", fabs(s - 1.0));
+    return 0;
+}</textarea>
+        <div class="code-output" id="ex2-c-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+      <div id="ex2-ocaml" class="code-panel active-ocaml-panel">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-ocaml">OCaml</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex2-ocaml')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex2-ocaml', 'flottants.ml')">↓ .ml</button>
+          <button class="btn btn-reset" onclick="resetCode('ex2-ocaml', 'ex2ocaml')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex2-ocaml-editor" spellcheck="false">(* Démonstration des problèmes de précision flottante en OCaml *)
+
+let epsilon = 1e-10
+
+let () =
+  let a = 0.1 and b = 0.2 and c = 0.3 in
+
+  (* Non-associativité *)
+  Printf.printf "(a+.b)+.c = %g\n" ((a+.b)+.c);
+  Printf.printf "a+.(b+.c) = %g\n" (a+.(b+.c));
+
+  (* Comparaison naïve vs ε *)
+  Printf.printf "\n0.1 +. 0.2 = 0.3 ?         %b  (MAUVAIS)\n" (a+.b = c);
+  Printf.printf "|0.1+0.2 - 0.3| < ε ?       %b  (CORRECT)\n"
+    (abs_float (a+.b-.c) < epsilon);
+
+  (* Accumulation *)
+  let s = ref 0.0 in
+  for _ = 1 to 1000 do s := !s +. 0.001 done;
+  Printf.printf "\n1000 × 0.001 = %.17f\n" !s;
+  Printf.printf "Erreur       = %.3e\n" (abs_float (!s -. 1.0))</textarea>
+        <div class="code-output" id="ex2-ocaml-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+      <!-- EX 3 -->
+      <div class="section-label">Exercice 3 — Tri par insertion</div>
+      <p>Implémentez le tri par insertion. Prouvez sa correction via un invariant et analysez sa complexité.</p>
+
+      <div class="code-tabs" id="ex3-tabs">
+        <button class="code-tab active-c" onclick="switchTab('ex3','c',this)">C</button>
+        <button class="code-tab" onclick="switchTab('ex3','ocaml',this)">OCaml</button>
+      </div>
+
+      <div id="ex3-c" class="code-panel active">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-c">C</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex3-c')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex3-c', 'tri_insertion.c')">↓ .c</button>
+          <button class="btn btn-reset" onclick="resetCode('ex3-c', 'ex3c')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex3-c-editor" spellcheck="false">/* tri_insertion : int[] -> int -> void
+   Trie t[0..n-1] en place (ordre croissant)
+   Invariant : t[0..i-1] est trié après i itérations
+   Complexité : O(n²) pire cas, O(n) meilleur cas */
+#include <stdio.h>
+
+void tri_insertion(int t[], int n) {
+    for (int i = 1; i < n; i++) {
+        int cle = t[i];
+        int j = i - 1;
+        /* Invariant : t[0..i-1] est trié */
+        while (j >= 0 && t[j] > cle) {
+            t[j+1] = t[j];
+            j--;
+        }
+        t[j+1] = cle;
+        /* Invariant : t[0..i] est trié */
+    }
+}
+
+int main(void) {
+    int t[] = {5, 2, 8, 1, 9, 3, 7, 4, 6};
+    int n = 9;
+    printf("Avant  : [");
+    for (int i = 0; i < n; i++) printf(i ? ", %d" : "%d", t[i]);
+    printf("]\n");
+    tri_insertion(t, n);
+    printf("Après  : [");
+    for (int i = 0; i < n; i++) printf(i ? ", %d" : "%d", t[i]);
+    printf("]\n");
+    return 0;
+}</textarea>
+        <div class="code-output" id="ex3-c-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+      <div id="ex3-ocaml" class="code-panel active-ocaml-panel">
+        <div class="code-toolbar">
+          <span class="lang-badge lang-ocaml">OCaml</span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn btn-run" onclick="runCode('ex3-ocaml')">▶ Simuler</button>
+          <button class="btn btn-dl" onclick="downloadCode('ex3-ocaml', 'tri_insertion.ml')">↓ .ml</button>
+          <button class="btn btn-reset" onclick="resetCode('ex3-ocaml', 'ex3ocaml')">↺ Reset</button>
+        </div>
+        <textarea class="code-editor" id="ex3-ocaml-editor" spellcheck="false">(* tri_insertion : int array -> unit
+   Trie le tableau en place (style impératif OCaml)
+   Invariant : t[0..i-1] trié après i itérations
+   Complexité : O(n²) pire cas, O(n) meilleur cas *)
+
+let tri_insertion t =
+  let n = Array.length t in
+  for i = 1 to n - 1 do
+    let cle = t.(i) in
+    let j = ref (i - 1) in
+    while !j >= 0 && t.(!j) > cle do
+      t.(!j + 1) <- t.(!j);
+      decr j
+    done;
+    t.(!j + 1) <- cle
+    (* Invariant : t[0..i] est trié *)
+  done
+
+(* Version purement fonctionnelle sur les listes *)
+let rec insert x = function
+  | [] -> [x]
+  | h :: t when x <= h -> x :: h :: t
+  | h :: t -> h :: insert x t
+
+let tri_insertion_lst lst =
+  List.fold_left (fun acc x -> insert x acc) [] lst
+
+let () =
+  let t = [| 5; 2; 8; 1; 9; 3; 7; 4; 6 |] in
+  Printf.printf "Avant  : %s\n"
+    (String.concat ", " (Array.to_list t |> List.map string_of_int));
+  tri_insertion t;
+  Printf.printf "Après  : %s\n"
+    (String.concat ", " (Array.to_list t |> List.map string_of_int));
+  let lst = [5; 2; 8; 1; 9; 3] in
+  Printf.printf "Liste  : %s\n"
+    (String.concat ", " (List.map string_of_int (tri_insertion_lst lst)))</textarea>
+        <div class="code-output" id="ex3-ocaml-output">
+          <div class="output-label">sortie simulée</div>
+          <div class="output-content"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 4 : QUIZ
+  ════════════════════════════════════════════════ -->
+  <div class="section-card" id="card4">
+    <div class="section-header" onclick="toggleCard('card4')">
+      <div class="section-number">04</div>
+      <div class="section-title">Auto-évaluation — Questions de cours</div>
+      <div class="section-chevron"></div>
+    </div>
+    <div class="section-body">
+
+      <!-- TIMER BAR -->
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-display">
+          <span class="timer-icon">⏱</span>
+          <span class="timer-digits" id="timerDigits">00:00</span>
+        </div>
+        <div class="timer-controls">
+          <button class="btn-timer" id="btnPause" onclick="timerToggle()" title="Pause / Reprendre">⏸ Pause</button>
+          <button class="btn-timer" onclick="timerReset()" title="Réinitialiser">↺ Reset</button>
+          <button class="btn-timer" onclick="timerToggleVisible()" id="btnVisibility" title="Masquer/Afficher">👁 Masquer</button>
+        </div>
+      </div>
+
+      <!-- QUIZ CONTROLS -->
+      <div class="quiz-controls-top">
+        <div class="quiz-meta" id="quizMeta">10 questions — tirage aléatoire</div>
+        <button class="btn-new-quiz" onclick="generateQuiz()">🔀 Nouveau QCM</button>
+      </div>
+
+      <!-- QUIZ CONTAINER -->
+      <div id="quizArea"></div>
+
+      <!-- SCORE PANEL (hidden until finished) -->
+      <div class="score-panel" id="scorePanel" style="display:none;">
+        <div class="score-label">Score final</div>
+        <div class="score-value" id="scoreValue">—</div>
+        <div class="score-time" id="scoreTime"></div>
+        <button class="btn-new-quiz" onclick="generateQuiz()" style="margin-top:16px;">🔀 Nouveau QCM</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 5 : CONTACT
+  ════════════════════════════════════════════════ -->
+  <div class="section-card" id="card5">
+    <div class="section-header" onclick="toggleCard('card5')">
+      <div class="section-number">05</div>
+      <div class="section-title">Contact &amp; Prise de rendez-vous</div>
+      <div class="section-chevron"></div>
+    </div>
+    <div class="section-body">
+      <p style="margin-top:14px; margin-bottom:24px;">Scannez le QR code correspondant ou cliquez sur le lien pour accéder au formulaire ou réserver un créneau.</p>
+
+      <div class="contact-grid" id="contactGrid">
+        <!-- Contact 1 : Formulaire Google (parents) -->
+        <div class="contact-card">
+          <div class="contact-icon">📋</div>
+          <div class="contact-title">Formulaire de contact</div>
+          <div class="contact-desc">Donnez votre avis, signalez une erreur ou posez une question à propos du suivi de votre enfant.</div>
+          <img class="qr-canvas" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&color=000000&bgcolor=ffffff&data=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSfiOvJG1wicFQY8EQufqy5YxGgTPSFPxdyb-OAtk95SUGxWFA%2Fviewform" alt="QR Google Forms" width="160" height="160" loading="lazy">
+          <a class="contact-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfiOvJG1wicFQY8EQufqy5YxGgTPSFPxdyb-OAtk95SUGxWFA/viewform" target="_blank">Google Forms ↗</a>
+        </div>
+        <!-- Contact 2 : Calendly parents -->
+        <div class="contact-card">
+          <div class="contact-icon">👨‍👩‍👧</div>
+          <div class="contact-title">Rendez-vous parents — 15 min</div>
+          <div class="contact-desc">Réservez un créneau pour une présentation de l'outil et un point sur le suivi de votre enfant.</div>
+          <img class="qr-canvas" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&color=000000&bgcolor=ffffff&data=https%3A%2F%2Fcalendly.com%2Fdidaskalosmanthanon%2Fpoint-parents-presentation-de-l-outil-15-min" alt="QR Calendly parents" width="160" height="160" loading="lazy">
+          <a class="contact-link" href="https://calendly.com/didaskalosmanthanon/point-parents-presentation-de-l-outil-15-min" target="_blank">Calendly ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script src="script.js"></script>
+</body>
+</html>
