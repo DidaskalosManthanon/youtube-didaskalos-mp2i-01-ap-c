@@ -609,6 +609,74 @@ function answerDyn(qid, optEl) {
   if (quizAnswered === QUIZ_SIZE) showScore();
 }
 
+// ═══════════════════════════════════════════════
+//  LOGIQUE MARKETING & SCORE (SCORE-TRIGGERED)
+// ═══════════════════════════════════════════════
+
+function getMarketingContent(score, total) {
+    const pct = (score / total) * 100;
+    
+    if (pct < 70) {
+        // STRATÉGIE : Diagnostic pour score faible (ex: Hocine 5/10)
+        return {
+            title: "Besoin d'un coup de pouce ? 💡",
+            message: `Ton score de ${score}/${total} montre que les bases du programme MP2I (C/OCaml) ne sont pas encore totalement ancrées. En prépa, ces lacunes peuvent vite devenir bloquantes pour les DS.`,
+            btnText: "Réserver un diagnostic gratuit (15 min)",
+            btnLink: "https://calendly.com/didaskalosmanthanon/point-parents-presentation-de-l-outil-15-min",
+            class: "warn"
+        };
+    } else if (pct < 100) {
+        // STRATÉGIE : Perfectionnement pour bon score
+        return {
+            title: "Vise l'excellence ! 🚀",
+            message: `Bien joué ! Avec ${score}/${total}, tu maîtrises l'essentiel. Pour atteindre les notes sommitales aux concours (X/ENS), il faut maintenant travailler la rédaction et les cas particuliers.`,
+            btnText: "Demander mes fiches de synthèse PDF",
+            btnLink: "#contact-section",
+            class: "success"
+        };
+    } else {
+        // STRATÉGIE : Challenge pour score parfait
+        return {
+            title: "Niveau Major ! 🏆",
+            message: "10/10. Tu as une excellente maîtrise. Es-tu prêt à te confronter à des sujets de concours originaux et des annales corrigées ?",
+            btnText: "Accéder aux ressources avancées",
+            btnLink: "https://docs.google.com/forms/d/e/1FAIpQLSfiOvJG1wicFQY8EQufqy5YxGgTPSFPxdyb-OAtk95SUGxWFA/viewform",
+            class: "excellence"
+        };
+    }
+}
+
+function showScore() {
+    timerPause();
+    const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
+    const time = document.getElementById('timerDigits').textContent;
+    
+    // Récupération du contenu marketing
+    const marketing = getMarketingContent(quizScore, QUIZ_SIZE);
+
+    // Mise à jour de l'affichage du score
+    document.getElementById('scoreValue').textContent = `${quizScore} / ${QUIZ_SIZE} (${pct}%)`;
+    document.getElementById('scoreTime').textContent = `Temps : ${time}`;
+    
+    // Injection du bloc Marketing personnalisé
+    const marketingArea = document.getElementById('marketing-cta-area');
+    marketingArea.innerHTML = `
+        <div class="marketing-cta ${marketing.class}">
+            <h3>${marketing.title}</h3>
+            <p>${marketing.message}</p>
+            <a href="${marketing.btnLink}" class="cta-button">${marketing.btnText}</a>
+        </div>
+    `;
+
+    document.getElementById('scorePanel').style.display = 'block';
+    
+    // Petit délai pour laisser le DOM se mettre à jour avant le scroll
+    setTimeout(() => {
+        document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+/*
 function showScore() {
   timerPause();
   const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
@@ -618,6 +686,7 @@ function showScore() {
   document.getElementById('scorePanel').style.display = 'block';
   document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+*/
 
 function escHtmlAttr(s) {
   return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
