@@ -368,209 +368,316 @@ function downloadCode(panelId, filename) {
 // ═══════════════════════════════════════════════
 //  QUIZ
 // ═══════════════════════════════════════════════
+// ─── Quiz ──────────────────────────────────────────────────────────────────────
 const ALL_QUESTIONS = [
-    {
-        q: "Un algorithme a une correction <strong>totale</strong> si :",
-        opts: [
-            { t: "Son résultat est correct quand il termine, mais il peut ne pas terminer.", ok: false, fb: "Non — la correction totale exige aussi la terminaison." },
-            { t: "Il termine toujours ET son résultat est correct.", ok: true, fb: "✓ Exact ! Correction totale = correction partielle + terminaison garantie." },
-            { t: "Son résultat est correct en moyenne, même s'il peut parfois être faux.", ok: false, fb: "Non — c'est la définition d'un algorithme probabiliste approché." }
-        ]
-    },
-    {
-        q: "À quoi sert le <strong>variant de boucle</strong> ?",
-        opts: [
-            { t: "Garantir que l'invariant est préservé à chaque itération.", ok: false, fb: "Non — le variant prouve la terminaison." },
-            { t: "Prouver la correction partielle de la boucle.", ok: false, fb: "Non — la correction partielle est établie par l'invariant." },
-            { t: "Prouver la <strong>terminaison</strong> de la boucle.", ok: true, fb: "✓ Correct ! Le variant est une expression entière strictement décroissante." }
-        ]
-    },
-    {
-        q: "En C, <code>0.1 + 0.2 == 0.3</code> est-il vrai ?",
-        opts: [
-            { t: "Oui, toujours.", ok: false, fb: "Non — 0.1, 0.2 et 0.3 ne sont pas représentables exactement en binaire." },
-            { t: "Non — à cause des erreurs d'arrondi en virgule flottante.", ok: true, fb: "✓ Exact ! Il faut utiliser |a − b| < ε." },
-            { t: "Cela dépend du compilateur.", ok: false, fb: "Non — c'est une propriété de IEEE 754." }
-        ]
-    }
-    // Ajoutez les autres questions ici...
+  {
+    q: "Un algorithme a une correction <strong>totale</strong> si :",
+    opts: [
+      { t: "Son résultat est correct quand il termine, mais il peut ne pas terminer.", ok: false, fb: "Non — la correction totale exige aussi la terminaison." },
+      { t: "Il termine toujours ET son résultat est correct.", ok: true,  fb: "✓ Exact ! Correction totale = correction partielle + terminaison garantie." },
+      { t: "Son résultat est correct en moyenne, même s'il peut parfois être faux.", ok: false, fb: "Non — c'est la définition d'un algorithme probabiliste approché, pas de la correction totale." }
+    ]
+  },
+  {
+    q: "À quoi sert le <strong>variant de boucle</strong> ?",
+    opts: [
+      { t: "Garantir que l'invariant est préservé à chaque itération.", ok: false, fb: "Non — le variant prouve la terminaison ; l'invariant garantit la correction." },
+      { t: "Prouver la correction partielle de la boucle.", ok: false, fb: "Non — la correction partielle est établie par l'invariant de boucle." },
+      { t: "Prouver la <strong>terminaison</strong> de la boucle.", ok: true,  fb: "✓ Correct ! Le variant est une expression entière strictement décroissante et minorée par 0 à chaque itération." }
+    ]
+  },
+  {
+    q: "En C, <code>0.1 + 0.2 == 0.3</code> est-il vrai ?",
+    opts: [
+      { t: "Oui, toujours.", ok: false, fb: "Non — 0.1, 0.2 et 0.3 ne sont pas représentables exactement en binaire." },
+      { t: "Non — à cause des erreurs d'arrondi en virgule flottante (IEEE 754).", ok: true,  fb: "✓ Exact ! Il faut utiliser |a − b| < ε pour comparer des flottants." },
+      { t: "Cela dépend du compilateur.", ok: false, fb: "Non — c'est une propriété de la représentation IEEE 754, indépendante du compilateur." }
+    ]
+  },
+  {
+    q: "Quel est le paradigme principal d'<strong>OCaml</strong> tel qu'il est présenté en MP2I ?",
+    opts: [
+      { t: "Impératif structuré.", ok: false, fb: "OCaml supporte l'impératif, mais son paradigme mis en avant en MP2I est fonctionnel." },
+      { t: "Déclaratif fonctionnel.", ok: true,  fb: "✓ Correct ! OCaml est principalement fonctionnel : fonctions d'ordre supérieur, récursion, types algébriques." },
+      { t: "Logique.", ok: false, fb: "Non — le paradigme logique est illustré par SQL en MP2I." }
+    ]
+  },
+  {
+    q: "Le tri par insertion a une complexité dans le <strong>pire cas</strong> de :",
+    opts: [
+      { t: "O(n log n)", ok: false, fb: "Non — O(n log n) correspond au tri fusion ou tri rapide (en moyenne)." },
+      { t: "O(n)", ok: false, fb: "Non — O(n) n'est que le meilleur cas (tableau déjà trié)." },
+      { t: "O(n²)", ok: true,  fb: "✓ Correct ! Chaque élément peut être comparé à tous ceux avant lui : 1+2+…+(n-1) = O(n²)." }
+    ]
+  },
+  {
+    q: "Qu'est-ce que la <strong>correction partielle</strong> d'un algorithme ?",
+    opts: [
+      { t: "L'algorithme termine toujours.", ok: false, fb: "Non — la terminaison seule ne garantit pas la correction." },
+      { t: "Si l'algorithme termine, alors son résultat est correct.", ok: true,  fb: "✓ Exact ! La correction partielle suppose la terminaison sans la prouver." },
+      { t: "L'algorithme donne un résultat correct dans au moins 50% des cas.", ok: false, fb: "Non — la correction partielle exige que le résultat soit correct chaque fois qu'il y a un résultat." }
+    ]
+  },
+  {
+    q: "Quelle est la complexité de la <strong>recherche dichotomique</strong> dans un tableau trié ?",
+    opts: [
+      { t: "O(n)", ok: false, fb: "Non — O(n) correspond à la recherche séquentielle." },
+      { t: "O(log n)", ok: true,  fb: "✓ Correct ! À chaque étape, la taille du problème est divisée par 2 : T(n) = T(n/2) + O(1) ⟹ O(log n)." },
+      { t: "O(1)", ok: false, fb: "Non — O(1) serait le cas d'un accès direct (hashmap), pas d'une dichotomie." }
+    ]
+  },
+  {
+    q: "Un langage dit de <strong>bas niveau d'abstraction</strong> comme C permet notamment :",
+    opts: [
+      { t: "La gestion automatique de la mémoire (garbage collector).", ok: false, fb: "Non — la gestion automatique est une caractéristique des langages de haut niveau comme OCaml ou Java." },
+      { t: "Une gestion explicite de la mémoire avec malloc et free.", ok: true,  fb: "✓ Exact ! Le programmeur contrôle explicitement l'allocation (malloc) et la libération (free) de la mémoire." },
+      { t: "L'absence totale de pointeurs.", ok: false, fb: "Non — les pointeurs sont au cœur du langage C." }
+    ]
+  },
+  {
+    q: "Que représente la notation <strong>O(f(n))</strong> en complexité ?",
+    opts: [
+      { t: "Le nombre exact d'opérations effectuées.", ok: false, fb: "Non — O(f(n)) est une borne supérieure asymptotique, pas le nombre exact." },
+      { t: "Une borne supérieure asymptotique du nombre d'opérations.", ok: true,  fb: "✓ Correct ! T(n) = O(f(n)) signifie qu'il existe c > 0, n₀ tel que T(n) ≤ c·f(n) pour tout n ≥ n₀." },
+      { t: "Le nombre moyen d'opérations dans tous les cas.", ok: false, fb: "Non — O représente le pire cas (worst case), pas la moyenne." }
+    ]
+  },
+  {
+    q: "Le <strong>coût amorti</strong> d'une opération dans une structure de données est :",
+    opts: [
+      { t: "Le coût de la pire opération possible.", ok: false, fb: "Non — c'est la définition du coût dans le pire cas, pas du coût amorti." },
+      { t: "Le coût moyen par opération sur une séquence d'opérations.", ok: true,  fb: "✓ Exact ! Exemple : push_back dans un tableau dynamique coûte O(1) amorti malgré des redimensionnements occasionnels O(n)." },
+      { t: "Le coût minimal possible d'une opération.", ok: false, fb: "Non — c'est la définition du meilleur cas." }
+    ]
+  },
+  {
+    q: "Dans la chaîne de compilation C, que produit l'<strong>éditeur de liens</strong> (linker) ?",
+    opts: [
+      { t: "Un fichier objet (.o)", ok: false, fb: "Non — le fichier objet est produit par le compilateur (gcc -c)." },
+      { t: "Un fichier exécutable.", ok: true,  fb: "✓ Exact ! L'éditeur de liens combine les fichiers objets et les bibliothèques pour produire l'exécutable final." },
+      { t: "Un fichier source préprocessé.", ok: false, fb: "Non — le préprocesseur produit le fichier source étendu, avant la compilation." }
+    ]
+  },
+  {
+    q: "En OCaml, les chaînes de caractères (<code>string</code>) sont :",
+    opts: [
+      { t: "Mutables : on peut modifier un caractère après création.", ok: false, fb: "Non — depuis OCaml 4.06, les strings sont immuables. Il faut utiliser Bytes pour les buffers mutables." },
+      { t: "Immuables : une fois créées, elles ne peuvent pas être modifiées.", ok: true,  fb: "✓ Correct ! L'immuabilité est un principe central du style fonctionnel d'OCaml." },
+      { t: "Des tableaux de caractères avec sentinelle nulle, comme en C.", ok: false, fb: "Non — c'est la représentation en C. En OCaml, les strings ont une longueur explicite et sont immuables." }
+    ]
+  },
+  {
+    q: "Quel paradigme utilise <strong>SQL</strong> selon le programme MP2I ?",
+    opts: [
+      { t: "Impératif structuré.", ok: false, fb: "Non — SQL n'est pas impératif ; on décrit ce qu'on veut, pas comment l'obtenir." },
+      { t: "Déclaratif fonctionnel.", ok: false, fb: "Non — SQL est déclaratif mais pas au sens fonctionnel (pas de fonctions d'ordre supérieur, pas de types algébriques)." },
+      { t: "Logique (déclaratif).", ok: true,  fb: "✓ Exact ! SQL décrit des faits et des contraintes ; le moteur déduit les réponses. Le programme MP2I le mentionne comme exemple de paradigme logique." }
+    ]
+  },
+  {
+    q: "Laquelle de ces récurrences a une solution en <strong>O(n log n)</strong> ?",
+    opts: [
+      { t: "T(n) = T(n-1) + O(1)", ok: false, fb: "Non — cette récurrence donne T(n) = O(n) (progression arithmétique)." },
+      { t: "T(n) = 2·T(n/2) + O(n)", ok: true,  fb: "✓ Correct ! Par le Master Theorem (cas 2) : a=2, b=2, f(n)=O(n) ⟹ T(n) = O(n log n). C'est la récurrence du tri fusion." },
+      { t: "T(n) = T(n/2) + O(1)", ok: false, fb: "Non — cette récurrence donne T(n) = O(log n) (recherche dichotomique)." }
+    ]
+  },
+  {
+    q: "En C, l'expression <code>t + 1</code> où <code>t</code> est un tableau est équivalente à :",
+    opts: [
+      { t: "L'adresse mémoire de t plus 1 octet.", ok: false, fb: "Non — l'arithmétique des pointeurs s'effectue en unités du type pointé. Pour int t[], t+1 avance de sizeof(int) octets." },
+      { t: "Un pointeur vers t[1] (t plus sizeof du type pointé).", ok: true,  fb: "✓ Exact ! En C, l'arithmétique de pointeur avance de sizeof(type_pointé) à chaque unité." },
+      { t: "La valeur t[0] + 1.", ok: false, fb: "Non — t+1 est une opération sur l'adresse, pas sur la valeur." }
+    ]
+  },
+  {
+    q: "Un <strong>invariant de boucle</strong> doit vérifier trois conditions. Laquelle n'en fait PAS partie ?",
+    opts: [
+      { t: "Il est vrai avant le premier tour de boucle (initialisation).", ok: false, fb: "Si — l'initialisation est bien une des trois conditions." },
+      { t: "Il doit être vrai après chaque itération (conservation).", ok: false, fb: "Si — la conservation est une des trois conditions." },
+      { t: "Il décroît strictement à chaque itération.", ok: true,  fb: "✓ Correct ! Décroître strictement est la propriété du VARIANT (terminaison), pas de l'invariant. L'invariant est préservé, pas décroissant." }
+    ]
+  },
+  {
+    q: "Quelle est la complexité <strong>temporelle</strong> du tri fusion dans le pire cas ?",
+    opts: [
+      { t: "O(n²)", ok: false, fb: "Non — O(n²) correspond aux tris naïfs (insertion, sélection, bulles)." },
+      { t: "O(n log n)", ok: true,  fb: "✓ Exact ! Le tri fusion divise toujours en deux et fusionne en O(n) : T(n) = 2T(n/2) + O(n) ⟹ O(n log n)." },
+      { t: "O(n)", ok: false, fb: "Non — O(n) serait optimal mais impossible pour un tri par comparaisons selon la borne inférieure." }
+    ]
+  },
+  {
+    q: "En OCaml, <code>let f x y = x + y</code> est une fonction :",
+    opts: [
+      { t: "À deux paramètres obligatoires, de type <code>int -> int -> int</code>.", ok: true,  fb: "✓ Correct ! En OCaml toutes les fonctions sont curryfiées : f prend x et renvoie une fonction qui prend y." },
+      { t: "Qui doit être appelée avec un tuple <code>f (x, y)</code>.", ok: false, fb: "Non — cela serait la syntaxe pour <code>let f (x, y) = x + y</code> (déconstruction de tuple)." },
+      { t: "Impure car elle modifie une variable globale.", ok: false, fb: "Non — cette fonction est pure ; elle ne modifie aucun état externe." }
+    ]
+  },
+  {
+    q: "Combien de bits occupe un <code>double</code> en C (norme IEEE 754) ?",
+    opts: [
+      { t: "32 bits", ok: false, fb: "Non — 32 bits correspond à un <code>float</code> (simple précision)." },
+      { t: "64 bits", ok: true,  fb: "✓ Exact ! Un double est sur 64 bits : 1 bit signe, 11 bits exposant, 52 bits mantisse." },
+      { t: "128 bits", ok: false, fb: "Non — 128 bits existe (<code>long double</code> sur certaines plateformes) mais ce n'est pas le double standard." }
+    ]
+  },
+  {
+    q: "Dans quelle structure de données la complexité de la recherche est-elle <strong>O(1)</strong> en moyenne ?",
+    opts: [
+      { t: "Tableau trié", ok: false, fb: "Non — dans un tableau trié, la recherche par dichotomie est O(log n)." },
+      { t: "Table de hachage (hashtable)", ok: true,  fb: "✓ Exact ! En moyenne (et avec une bonne fonction de hachage), la recherche dans une hashtable est O(1) amorti." },
+      { t: "Arbre binaire de recherche non équilibré", ok: false, fb: "Non — dans le pire cas (arbre dégénéré), la recherche est O(n)." }
+    ]
+  }
 ];
 
 let activeQuiz = [];
 let quizAnswered = 0;
 let quizScore = 0;
-const QUIZ_SIZE = 3; // Réduit pour le test
+const QUIZ_SIZE = 10;
 
 function shuffle(arr) {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function generateQuiz() {
-    activeQuiz = shuffle(ALL_QUESTIONS).slice(0, QUIZ_SIZE);
-    quizAnswered = 0;
-    quizScore = 0;
+  // Pick QUIZ_SIZE questions randomly
+  activeQuiz = shuffle(ALL_QUESTIONS).slice(0, QUIZ_SIZE);
+  quizAnswered = 0;
+  quizScore = 0;
 
-    const scorePanel = document.getElementById('scorePanel');
-    const quizMeta = document.getElementById('quizMeta');
-    const area = document.getElementById('quizArea');
-    
-    if (scorePanel) scorePanel.style.display = 'none';
-    if (quizMeta) quizMeta.textContent = `${QUIZ_SIZE} questions — tirage aléatoire`;
-    if (!area) return;
-    
-    area.innerHTML = '';
+  document.getElementById('scorePanel').style.display = 'none';
+  document.getElementById('quizMeta').textContent = `${QUIZ_SIZE} questions — tirage aléatoire (${ALL_QUESTIONS.length} disponibles)`;
 
-    activeQuiz.forEach((q, idx) => {
-        const shuffledOpts = shuffle(q.opts);
-        const qid = `dq${idx}`;
+  const area = document.getElementById('quizArea');
+  area.innerHTML = '';
 
-        const opts = shuffledOpts.map((opt) => `
-            <div class="quiz-option" data-ok="${opt.ok}" data-fb="${escHtmlAttr(opt.fb)}" onclick="answerDyn('${qid}', this)">
-                <div class="quiz-indicator"></div>
-                ${opt.t}
-            </div>`).join('');
+  activeQuiz.forEach((q, idx) => {
+    const shuffledOpts = shuffle(q.opts);
+    const qid = `dq${idx}`;
 
-        area.innerHTML += `
-            <div class="quiz-container" id="${qid}-wrap">
-                <div class="quiz-title">Question ${idx + 1} / ${QUIZ_SIZE}</div>
-                <div class="quiz-question">${q.q}</div>
-                <div class="quiz-options" id="${qid}">${opts}</div>
-                <div class="quiz-feedback" id="${qid}-fb"></div>
-            </div>`;
-    });
+    const opts = shuffledOpts.map((opt, oi) => `
+      <div class="quiz-option" data-ok="${opt.ok}" data-fb="${escHtmlAttr(opt.fb)}" onclick="answerDyn('${qid}', this)">
+        <div class="quiz-indicator"></div>
+        ${opt.t}
+      </div>`).join('');
 
-    timerReset();
-    timerStart();
+    area.innerHTML += `
+      <div class="quiz-container" id="${qid}-wrap">
+        <div class="quiz-title">Question ${idx + 1} / ${QUIZ_SIZE}</div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-options" id="${qid}">${opts}</div>
+        <div class="quiz-feedback" id="${qid}-fb"></div>
+      </div>`;
+  });
+
+  timerReset();
+  timerStart();
 }
 
 function answerDyn(qid, optEl) {
-    const container = document.getElementById(qid);
-    if (!container || container.dataset.answered) return;
-    container.dataset.answered = '1';
+  const container = document.getElementById(qid);
+  if (container.dataset.answered) return;
+  container.dataset.answered = '1';
 
-    const isCorrect = optEl.dataset.ok === 'true';
-    const feedback = optEl.dataset.fb;
+  const isCorrect = optEl.dataset.ok === 'true';
+  const feedback  = optEl.dataset.fb;
 
-    const opts = container.querySelectorAll('.quiz-option');
-    opts.forEach(o => {
-        o.classList.add('answered');
-        o.onclick = null;
-    });
-    optEl.classList.add(isCorrect ? 'correct' : 'wrong');
-    const indicator = optEl.querySelector('.quiz-indicator');
-    if (indicator) indicator.textContent = isCorrect ? '✓' : '✗';
-    
-    if (!isCorrect) {
-        opts.forEach(o => {
-            if (o !== optEl && o.dataset.ok === 'true') o.classList.add('correct');
-            else if (o !== optEl) o.style.opacity = '.4';
-        });
-    }
+  const opts = container.querySelectorAll('.quiz-option');
+  opts.forEach(o => { o.classList.add('answered'); o.onclick = null; });
+  optEl.classList.add(isCorrect ? 'correct' : 'wrong');
+  optEl.querySelector('.quiz-indicator').textContent = isCorrect ? '✓' : '✗';
+  if (!isCorrect) {
+    // show correct
+    opts.forEach(o => { if (o !== optEl && o.dataset.ok === 'true') o.classList.add('correct'); else if (o !== optEl) o.style.opacity = '.4'; });
+  }
 
-    const fb = document.getElementById(`${qid}-fb`);
-    if (fb) {
-        fb.textContent = feedback;
-        fb.classList.add('visible');
-        fb.style.color = isCorrect ? 'var(--accent)' : '#f87171';
-    }
+  const fb = document.getElementById(`${qid}-fb`);
+  fb.textContent = feedback;
+  fb.classList.add('visible');
+  fb.style.color = isCorrect ? 'var(--accent)' : '#f87171';
 
-    if (isCorrect) quizScore++;
-    quizAnswered++;
+  if (isCorrect) quizScore++;
+  quizAnswered++;
 
-    if (quizAnswered === QUIZ_SIZE) showScore();
+  if (quizAnswered === QUIZ_SIZE) showScore();
 }
 
 function showScore() {
-    timerPause();
-    const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
-    const digits = document.getElementById('timerDigits');
-    const scoreValue = document.getElementById('scoreValue');
-    const scoreTime = document.getElementById('scoreTime');
-    const scorePanel = document.getElementById('scorePanel');
-    
-    if (scoreValue) scoreValue.textContent = `${quizScore} / ${QUIZ_SIZE} (${pct}%)`;
-    if (scoreTime && digits) scoreTime.textContent = `Temps : ${digits.textContent}`;
-    if (scorePanel) {
-        scorePanel.style.display = 'block';
-        scorePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+  timerPause();
+  const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
+  const digits = document.getElementById('timerDigits');
+  document.getElementById('scoreValue').textContent = `${quizScore} / ${QUIZ_SIZE}  (${pct}%)`;
+  document.getElementById('scoreTime').textContent = `Temps : ${digits.textContent}`;
+  document.getElementById('scorePanel').style.display = 'block';
+  document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function escHtmlAttr(s) {
-    return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// ═══════════════════════════════════════════════
-//  TIMER
-// ═══════════════════════════════════════════════
+// ─── Timer ────────────────────────────────────────────────────────────────────
 let timerSeconds = 0;
 let timerInterval = null;
 let timerRunning = false;
 let timerVisible = true;
 
 function timerStart() {
-    if (timerRunning) return;
-    timerRunning = true;
-    timerInterval = setInterval(() => {
-        timerSeconds++;
-        updateTimerDisplay();
-    }, 1000);
-    const btnPause = document.getElementById('btnPause');
-    if (btnPause) {
-        btnPause.textContent = '⏸ Pause';
-        btnPause.classList.remove('paused');
-    }
+  if (timerRunning) return;
+  timerRunning = true;
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  document.getElementById('btnPause').classList.remove('paused');
 }
 
 function timerPause() {
-    if (!timerRunning) return;
-    clearInterval(timerInterval);
-    timerRunning = false;
+  if (!timerRunning) return;
+  clearInterval(timerInterval);
+  timerRunning = false;
 }
 
 function timerToggle() {
-    if (timerRunning) {
-        timerPause();
-        const btnPause = document.getElementById('btnPause');
-        if (btnPause) {
-            btnPause.textContent = '▶ Reprendre';
-            btnPause.classList.add('paused');
-        }
-    } else {
-        timerStart();
-    }
+  if (timerRunning) {
+    timerPause();
+    document.getElementById('btnPause').textContent = '▶ Reprendre';
+    document.getElementById('btnPause').classList.add('paused');
+  } else {
+    timerStart();
+  }
 }
 
 function timerReset() {
-    timerPause();
-    timerSeconds = 0;
-    updateTimerDisplay();
-    const btnPause = document.getElementById('btnPause');
-    if (btnPause) {
-        btnPause.textContent = '⏸ Pause';
-        btnPause.classList.remove('paused');
-    }
+  timerPause();
+  timerSeconds = 0;
+  updateTimerDisplay();
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  document.getElementById('btnPause').classList.remove('paused');
 }
 
 function timerToggleVisible() {
-    timerVisible = !timerVisible;
-    const d = document.getElementById('timerDigits');
-    const btnVisibility = document.getElementById('btnVisibility');
-    if (d) d.classList.toggle('hidden-timer', !timerVisible);
-    if (btnVisibility) btnVisibility.textContent = timerVisible ? '👁 Masquer' : '👁 Afficher';
+  timerVisible = !timerVisible;
+  const d = document.getElementById('timerDigits');
+  d.classList.toggle('hidden-timer', !timerVisible);
+  document.getElementById('btnVisibility').textContent = timerVisible ? '👁 Masquer' : '👁 Afficher';
 }
 
 function updateTimerDisplay() {
-    const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-    const s = (timerSeconds % 60).toString().padStart(2, '0');
-    const digits = document.getElementById('timerDigits');
-    if (digits) digits.textContent = `${m}:${s}`;
+  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+  const s = (timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('timerDigits').textContent = `${m}:${s}`;
 }
+
+
 
 // ═══════════════════════════════════════════════
 //  INIT
