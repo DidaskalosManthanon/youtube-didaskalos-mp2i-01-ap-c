@@ -20,8 +20,13 @@
       <span class="auth-logo-text">MP2I</span>
       <span class="auth-logo-bracket">}</span>
     </div>
-    <div class="auth-title">Accès sécurisé</div>
-    <p class="auth-subtitle">Entrez le mot de passe pour accéder au cours.</p>
+    <div class="auth-title">Accès Terminal</div>
+    <p class="auth-subtitle">Identifie-toi pour charger le module.</p>
+    
+    <div class="auth-input-wrap">
+      <input type="text" id="userNameInput" class="auth-input" placeholder="Ton prénom" autocomplete="given-name">
+    </div>
+
     <div class="auth-input-wrap" id="authInputWrap">
       <input
         type="password"
@@ -31,16 +36,12 @@
         autocomplete="current-password"
         onkeydown="if(event.key==='Enter') checkAuth()"
       >
-      <button class="auth-btn" onclick="checkAuth()">
+      <button id="authButton" class="auth-btn" onclick="checkAuth()">
         <span>Entrer</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
     </div>
     <div class="auth-error" id="authError">Mot de passe incorrect.</div>
-    <div class="auth-hint">
-      <span class="auth-hint-icon">🔒</span>
-      Ressource réservée aux élèves de la classe MP2I.
-    </div>
   </div>
 </div>
 
@@ -319,7 +320,7 @@
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex1-c')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex1-c', 'recherche.c')">↓ .c</button>
-          <button class="btn btn-reset" onclick="resetCode('ex1-c', 'ex1c')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex1-c')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex1-c-editor" spellcheck="false">/* recherche_seq : int[] -> int -> int -> bool
    Invariant : aucun élément égal à cible dans t[0..i-1]
@@ -354,7 +355,7 @@ int main(void) {
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex1-ocaml')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex1-ocaml', 'recherche.ml')">↓ .ml</button>
-          <button class="btn btn-reset" onclick="resetCode('ex1-ocaml', 'ex1ocaml')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex1-ocaml')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex1-ocaml-editor" spellcheck="false">(* recherche_seq : 'a array -> 'a -> bool
    Recherche séquentielle générique
@@ -398,7 +399,7 @@ let () =
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex2-c')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex2-c', 'flottants.c')">↓ .c</button>
-          <button class="btn btn-reset" onclick="resetCode('ex2-c', 'ex2c')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex2-c')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex2-c-editor" spellcheck="false">/* Démonstration des problèmes de précision flottante */
 #include <stdio.h>
@@ -439,7 +440,7 @@ int main(void) {
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex2-ocaml')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex2-ocaml', 'flottants.ml')">↓ .ml</button>
-          <button class="btn btn-reset" onclick="resetCode('ex2-ocaml', 'ex2ocaml')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex2-ocaml')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex2-ocaml-editor" spellcheck="false">(* Démonstration des problèmes de précision flottante en OCaml *)
 
@@ -483,7 +484,7 @@ let () =
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex3-c')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex3-c', 'tri_insertion.c')">↓ .c</button>
-          <button class="btn btn-reset" onclick="resetCode('ex3-c', 'ex3c')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex3-c')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex3-c-editor" spellcheck="false">/* tri_insertion : int[] -> int -> void
    Trie t[0..n-1] en place (ordre croissant)
@@ -529,7 +530,7 @@ int main(void) {
           <span class="toolbar-spacer"></span>
           <button class="btn btn-run" onclick="runCode('ex3-ocaml')">▶ Simuler</button>
           <button class="btn btn-dl" onclick="downloadCode('ex3-ocaml', 'tri_insertion.ml')">↓ .ml</button>
-          <button class="btn btn-reset" onclick="resetCode('ex3-ocaml', 'ex3ocaml')">↺ Reset</button>
+          <button class="btn btn-reset" onclick="resetCode('ex3-ocaml')">↺ Reset</button>
         </div>
         <textarea class="code-editor" id="ex3-ocaml-editor" spellcheck="false">(* tri_insertion : int array -> unit
    Trie le tableau en place (style impératif OCaml)
@@ -617,7 +618,7 @@ let () =
         <div class="score-time" id="scoreTime"></div>
 
         <div id="marketing-cta-area"></div>
-        
+
         <button class="btn-new-quiz" onclick="generateQuiz()" style="margin-top:16px;">🔀 Nouveau QCM</button>
       </div>
 

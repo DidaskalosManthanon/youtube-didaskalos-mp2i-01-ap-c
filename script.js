@@ -2,9 +2,6 @@
 //  AUTHENTIFICATION AVEC HASH SHA-256
 // ═══════════════════════════════════════════════
 
-// ⚠️ GÉNÉREZ LE VRAI HASH AVEC LE SNIPPET CI-DESSOUS
-// Pour mp2i2025, le vrai hash est:
-// 9a0b82e5c3d8f1a4b6c7d9e2f3a5b8c1d4e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d
 const CORRECT_PASSWORD_HASH = '08d06b1551775bf6ea2fcc4d8852ac9c07f3d1bce830806b851f1498cd763acc';
 const AUTH_SESSION_KEY = 'mp2i_auth';
 const SESSION_DURATION = 8 * 60 * 60 * 1000;
@@ -14,7 +11,9 @@ const LOCKOUT_DURATION = 15 * 60 * 1000;
 let failedAttempts = 0;
 let lockoutUntil = null;
 
-// Fonction de hachage SHA-256
+// Stockage du prénom pour réutilisation dans sendResultEmail
+let currentUserName = "Élève";
+
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -74,15 +73,16 @@ function shakeInput(input) {
 
 async function checkAuth() {
     const input = document.getElementById('authInput');
-    const error = document.getElementById('authError');
-    
-    // Vérifier si les éléments existent
+    const nameInput = document.getElementById('userNameInput');
+
+    // BUG CORRIGÉ : on utilise la variable globale currentUserName
+    currentUserName = nameInput?.value.trim().substring(0, 15) || "Élève";
+
     if (!input) {
         console.error('authInput non trouvé');
         return;
     }
-    
-    // Vérifier si bloqué
+
     getStoredAttempts();
     if (lockoutUntil && Date.now() < lockoutUntil) {
         const remainingMin = Math.ceil((lockoutUntil - Date.now()) / 60000);
@@ -97,21 +97,22 @@ async function checkAuth() {
         resetAttempts();
         input.disabled = false;
     }
-    
+
     if (!input.value.trim()) {
         showAuthError('Veuillez saisir un mot de passe');
         return;
     }
-    
+
+    // BUG CORRIGÉ : id unique "authButton" (suppression du double id dans le HTML)
     const btn = document.getElementById('authButton');
     if (btn) {
-        btn.textContent = '🔐 Vérification...';
+        btn.innerHTML = '<span>🔐 Vérification...</span>';
         btn.disabled = true;
     }
-    
+
     try {
         const inputHash = await hashPassword(input.value);
-        
+
         if (inputHash === CORRECT_PASSWORD_HASH) {
             resetAttempts();
             const sessionData = {
@@ -120,21 +121,25 @@ async function checkAuth() {
                 expires: Date.now() + SESSION_DURATION
             };
             sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sessionData));
-            
+            sessionStorage.setItem('mp2i_user_name', currentUserName);
+
             const screen = document.getElementById('authScreen');
             const mainContent = document.getElementById('mainContent');
             const navbar = document.getElementById('navbar');
-            
+
+            const mainTitle = document.querySelector('h1');
+            if (mainTitle) mainTitle.innerHTML = `Bonjour ${currentUserName},<br>Algorithmes et <em>Programmes</em>`;
+
             if (screen) screen.classList.add('hidden');
             if (mainContent) mainContent.style.visibility = 'visible';
             if (navbar) navbar.style.visibility = 'visible';
-            
+
             input.value = '';
             input.disabled = false;
         } else {
             failedAttempts++;
             saveAttempts();
-            
+
             const remaining = MAX_ATTEMPTS - failedAttempts;
             if (failedAttempts >= MAX_ATTEMPTS) {
                 lockoutUntil = Date.now() + LOCKOUT_DURATION;
@@ -157,7 +162,7 @@ async function checkAuth() {
         showAuthError('❌ Erreur technique. Veuillez réessayer.');
     } finally {
         if (btn) {
-            btn.textContent = 'Entrer';
+            btn.innerHTML = '<span>Entrer</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
             btn.disabled = false;
         }
     }
@@ -193,7 +198,6 @@ function toggleNavMenu() {
     if (burger) burger.classList.toggle('open');
 }
 
-// Fermer le menu mobile si on clique en dehors
 document.addEventListener('click', e => {
     const links = document.getElementById('navLinks');
     const burger = document.getElementById('navBurger');
@@ -203,7 +207,6 @@ document.addEventListener('click', e => {
     }
 });
 
-// Shadow sur la navbar au scroll + active link highlight
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
     if (navbar) {
@@ -309,6 +312,8 @@ function switchTab(prefix, lang, btn) {
 
 // ═══════════════════════════════════════════════
 //  RESET CODE
+// BUG CORRIGÉ : la fonction acceptait 2 args mais n'utilisait que le premier.
+//               On uniformise : on ne passe qu'un arg depuis le HTML.
 // ═══════════════════════════════════════════════
 function resetCode(panelId) {
     const ta = document.getElementById(`${panelId}-editor`);
@@ -368,10 +373,29 @@ function downloadCode(panelId, filename) {
 // ═══════════════════════════════════════════════
 //  QUIZ
 // ═══════════════════════════════════════════════
-// ─── Quiz ──────────────────────────────────────────────────────────────────────
+
+// Labels lisibles pour les catégories
+const CAT_LABELS = {
+    'preuve':          'Preuve d\'algorithmes (terminaison, correction, invariant)',
+    'représentation':  'Représentation des données (flottants, pointeurs)',
+    'complexité':      'Complexité algorithmique',
+    'paradigme':       'Paradigmes de programmation',
+    'compilation':     'Compilation & interprétation'
+};
+
+// Conseils par catégorie
+const CAT_ADVICE = {
+    'preuve':          'Relis la définition de variant et d\'invariant de boucle. Pratique avec des boucles simples (tri insertion, recherche séquentielle).',
+    'représentation':  'Approfondis la norme IEEE 754 : signe, exposant, mantisse. Teste des comparaisons de flottants en C et OCaml.',
+    'complexité':      'Revois le Master Theorem et les récurrences classiques. Entraîne-toi sur le tri fusion, la dichotomie, et les tris quadratiques.',
+    'paradigme':       'Compare les mêmes algorithmes en C et en OCaml. Focus sur le style récursif vs itératif, et la currification en OCaml.',
+    'compilation':     'Relis la différence compilation/interprétation, les fichiers .h / .c en C, et le processus gcc → objet → exécutable.'
+};
+
 const ALL_QUESTIONS = [
   {
     q: "Un algorithme a une correction <strong>totale</strong> si :",
+    cat: "preuve",
     opts: [
       { t: "Son résultat est correct quand il termine, mais il peut ne pas terminer.", ok: false, fb: "Non — la correction totale exige aussi la terminaison." },
       { t: "Il termine toujours ET son résultat est correct.", ok: true,  fb: "✓ Exact ! Correction totale = correction partielle + terminaison garantie." },
@@ -380,6 +404,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "À quoi sert le <strong>variant de boucle</strong> ?",
+    cat: "preuve",
     opts: [
       { t: "Garantir que l'invariant est préservé à chaque itération.", ok: false, fb: "Non — le variant prouve la terminaison ; l'invariant garantit la correction." },
       { t: "Prouver la correction partielle de la boucle.", ok: false, fb: "Non — la correction partielle est établie par l'invariant de boucle." },
@@ -388,6 +413,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "En C, <code>0.1 + 0.2 == 0.3</code> est-il vrai ?",
+    cat: "représentation",
     opts: [
       { t: "Oui, toujours.", ok: false, fb: "Non — 0.1, 0.2 et 0.3 ne sont pas représentables exactement en binaire." },
       { t: "Non — à cause des erreurs d'arrondi en virgule flottante (IEEE 754).", ok: true,  fb: "✓ Exact ! Il faut utiliser |a − b| < ε pour comparer des flottants." },
@@ -396,86 +422,43 @@ const ALL_QUESTIONS = [
   },
   {
     q: "Quel est le paradigme principal d'<strong>OCaml</strong> tel qu'il est présenté en MP2I ?",
+    cat: "paradigme",
     opts: [
-      { t: "Impératif structuré.", ok: false, fb: "OCaml supporte l'impératif, mais son paradigme mis en avant en MP2I est fonctionnel." },
-      { t: "Déclaratif fonctionnel.", ok: true,  fb: "✓ Correct ! OCaml est principalement fonctionnel : fonctions d'ordre supérieur, récursion, types algébriques." },
-      { t: "Logique.", ok: false, fb: "Non — le paradigme logique est illustré par SQL en MP2I." }
+      { t: "Impératif structuré.", ok: false, fb: "Non — OCaml peut être utilisé de manière impérative, mais son paradigme principal en MP2I est fonctionnel." },
+      { t: "Déclaratif fonctionnel.", ok: true,  fb: "✓ Correct ! OCaml est présenté en MP2I comme le langage fonctionnel, par opposition à C (impératif)." },
+      { t: "Logique (déclaratif).", ok: false, fb: "Non — le paradigme logique est illustré par SQL, pas par OCaml." }
     ]
   },
   {
-    q: "Le tri par insertion a une complexité dans le <strong>pire cas</strong> de :",
+    q: "Quelle est la différence entre <strong>compilation</strong> et <strong>interprétation</strong> ?",
+    cat: "compilation",
     opts: [
-      { t: "O(n log n)", ok: false, fb: "Non — O(n log n) correspond au tri fusion ou tri rapide (en moyenne)." },
-      { t: "O(n)", ok: false, fb: "Non — O(n) n'est que le meilleur cas (tableau déjà trié)." },
-      { t: "O(n²)", ok: true,  fb: "✓ Correct ! Chaque élément peut être comparé à tous ceux avant lui : 1+2+…+(n-1) = O(n²)." }
+      { t: "Un compilateur traduit le code source en code machine avant l'exécution ; un interpréteur l'exécute ligne par ligne à la volée.", ok: true,  fb: "✓ Exact ! En C, gcc compile tout en un exécutable. En Python, l'interpréteur lit et exécute le code à la volée." },
+      { t: "L'interprétation est toujours plus rapide car elle n'a pas de phase de compilation.", ok: false, fb: "Non — c'est l'inverse : le code compilé est généralement plus rapide car optimisé en amont." },
+      { t: "La compilation et l'interprétation produisent exactement le même fichier exécutable.", ok: false, fb: "Non — la compilation produit un binaire natif ; l'interprétation ne génère pas de fichier exécutable précompilé." }
     ]
   },
   {
-    q: "Qu'est-ce que la <strong>correction partielle</strong> d'un algorithme ?",
+    q: "Laquelle de ces affirmations sur les <strong>invariants de boucle</strong> est correcte ?",
+    cat: "preuve",
     opts: [
-      { t: "L'algorithme termine toujours.", ok: false, fb: "Non — la terminaison seule ne garantit pas la correction." },
-      { t: "Si l'algorithme termine, alors son résultat est correct.", ok: true,  fb: "✓ Exact ! La correction partielle suppose la terminaison sans la prouver." },
-      { t: "L'algorithme donne un résultat correct dans au moins 50% des cas.", ok: false, fb: "Non — la correction partielle exige que le résultat soit correct chaque fois qu'il y a un résultat." }
+      { t: "Un invariant doit être faux avant la boucle pour garantir la correction.", ok: false, fb: "Non — l'invariant doit être VRAI avant la première itération (initialisation)." },
+      { t: "Un invariant vrai à l'entrée et préservé à chaque itération est vrai à la sortie de boucle.", ok: true,  fb: "✓ Correct ! C'est exactement le principe du raisonnement par invariant (similaire à l'induction)." },
+      { t: "Un invariant sert uniquement à prouver la terminaison.", ok: false, fb: "Non — la terminaison est prouvée par le variant. L'invariant prouve la correction partielle." }
     ]
   },
   {
-    q: "Quelle est la complexité de la <strong>recherche dichotomique</strong> dans un tableau trié ?",
+    q: "Pourquoi SQL est-il un exemple de paradigme <strong>logique</strong> selon le programme MP2I ?",
+    cat: "paradigme",
     opts: [
-      { t: "O(n)", ok: false, fb: "Non — O(n) correspond à la recherche séquentielle." },
-      { t: "O(log n)", ok: true,  fb: "✓ Correct ! À chaque étape, la taille du problème est divisée par 2 : T(n) = T(n/2) + O(1) ⟹ O(log n)." },
-      { t: "O(1)", ok: false, fb: "Non — O(1) serait le cas d'un accès direct (hashmap), pas d'une dichotomie." }
-    ]
-  },
-  {
-    q: "Un langage dit de <strong>bas niveau d'abstraction</strong> comme C permet notamment :",
-    opts: [
-      { t: "La gestion automatique de la mémoire (garbage collector).", ok: false, fb: "Non — la gestion automatique est une caractéristique des langages de haut niveau comme OCaml ou Java." },
-      { t: "Une gestion explicite de la mémoire avec malloc et free.", ok: true,  fb: "✓ Exact ! Le programmeur contrôle explicitement l'allocation (malloc) et la libération (free) de la mémoire." },
-      { t: "L'absence totale de pointeurs.", ok: false, fb: "Non — les pointeurs sont au cœur du langage C." }
-    ]
-  },
-  {
-    q: "Que représente la notation <strong>O(f(n))</strong> en complexité ?",
-    opts: [
-      { t: "Le nombre exact d'opérations effectuées.", ok: false, fb: "Non — O(f(n)) est une borne supérieure asymptotique, pas le nombre exact." },
-      { t: "Une borne supérieure asymptotique du nombre d'opérations.", ok: true,  fb: "✓ Correct ! T(n) = O(f(n)) signifie qu'il existe c > 0, n₀ tel que T(n) ≤ c·f(n) pour tout n ≥ n₀." },
-      { t: "Le nombre moyen d'opérations dans tous les cas.", ok: false, fb: "Non — O représente le pire cas (worst case), pas la moyenne." }
-    ]
-  },
-  {
-    q: "Le <strong>coût amorti</strong> d'une opération dans une structure de données est :",
-    opts: [
-      { t: "Le coût de la pire opération possible.", ok: false, fb: "Non — c'est la définition du coût dans le pire cas, pas du coût amorti." },
-      { t: "Le coût moyen par opération sur une séquence d'opérations.", ok: true,  fb: "✓ Exact ! Exemple : push_back dans un tableau dynamique coûte O(1) amorti malgré des redimensionnements occasionnels O(n)." },
-      { t: "Le coût minimal possible d'une opération.", ok: false, fb: "Non — c'est la définition du meilleur cas." }
-    ]
-  },
-  {
-    q: "Dans la chaîne de compilation C, que produit l'<strong>éditeur de liens</strong> (linker) ?",
-    opts: [
-      { t: "Un fichier objet (.o)", ok: false, fb: "Non — le fichier objet est produit par le compilateur (gcc -c)." },
-      { t: "Un fichier exécutable.", ok: true,  fb: "✓ Exact ! L'éditeur de liens combine les fichiers objets et les bibliothèques pour produire l'exécutable final." },
-      { t: "Un fichier source préprocessé.", ok: false, fb: "Non — le préprocesseur produit le fichier source étendu, avant la compilation." }
-    ]
-  },
-  {
-    q: "En OCaml, les chaînes de caractères (<code>string</code>) sont :",
-    opts: [
-      { t: "Mutables : on peut modifier un caractère après création.", ok: false, fb: "Non — depuis OCaml 4.06, les strings sont immuables. Il faut utiliser Bytes pour les buffers mutables." },
-      { t: "Immuables : une fois créées, elles ne peuvent pas être modifiées.", ok: true,  fb: "✓ Correct ! L'immuabilité est un principe central du style fonctionnel d'OCaml." },
-      { t: "Des tableaux de caractères avec sentinelle nulle, comme en C.", ok: false, fb: "Non — c'est la représentation en C. En OCaml, les strings ont une longueur explicite et sont immuables." }
-    ]
-  },
-  {
-    q: "Quel paradigme utilise <strong>SQL</strong> selon le programme MP2I ?",
-    opts: [
-      { t: "Impératif structuré.", ok: false, fb: "Non — SQL n'est pas impératif ; on décrit ce qu'on veut, pas comment l'obtenir." },
-      { t: "Déclaratif fonctionnel.", ok: false, fb: "Non — SQL est déclaratif mais pas au sens fonctionnel (pas de fonctions d'ordre supérieur, pas de types algébriques)." },
-      { t: "Logique (déclaratif).", ok: true,  fb: "✓ Exact ! SQL décrit des faits et des contraintes ; le moteur déduit les réponses. Le programme MP2I le mentionne comme exemple de paradigme logique." }
+      { t: "Parce qu'il utilise des boucles for et des conditions if.", ok: false, fb: "Non — les boucles et conditions sont typiques du paradigme impératif." },
+      { t: "Parce qu'il décrit des faits et des contraintes et laisse le moteur déduire les résultats.", ok: true,  fb: "✓ Exact ! SQL décrit des faits et des contraintes ; le moteur déduit les réponses. Le programme MP2I le mentionne comme exemple de paradigme logique." },
+      { t: "Déclaratif fonctionnel.", ok: false, fb: "Non — SQL est déclaratif mais pas au sens fonctionnel (pas de fonctions d'ordre supérieur, pas de types algébriques)." }
     ]
   },
   {
     q: "Laquelle de ces récurrences a une solution en <strong>O(n log n)</strong> ?",
+    cat: "complexité",
     opts: [
       { t: "T(n) = T(n-1) + O(1)", ok: false, fb: "Non — cette récurrence donne T(n) = O(n) (progression arithmétique)." },
       { t: "T(n) = 2·T(n/2) + O(n)", ok: true,  fb: "✓ Correct ! Par le Master Theorem (cas 2) : a=2, b=2, f(n)=O(n) ⟹ T(n) = O(n log n). C'est la récurrence du tri fusion." },
@@ -484,6 +467,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "En C, l'expression <code>t + 1</code> où <code>t</code> est un tableau est équivalente à :",
+    cat: "représentation",
     opts: [
       { t: "L'adresse mémoire de t plus 1 octet.", ok: false, fb: "Non — l'arithmétique des pointeurs s'effectue en unités du type pointé. Pour int t[], t+1 avance de sizeof(int) octets." },
       { t: "Un pointeur vers t[1] (t plus sizeof du type pointé).", ok: true,  fb: "✓ Exact ! En C, l'arithmétique de pointeur avance de sizeof(type_pointé) à chaque unité." },
@@ -492,6 +476,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "Un <strong>invariant de boucle</strong> doit vérifier trois conditions. Laquelle n'en fait PAS partie ?",
+    cat: "preuve",
     opts: [
       { t: "Il est vrai avant le premier tour de boucle (initialisation).", ok: false, fb: "Si — l'initialisation est bien une des trois conditions." },
       { t: "Il doit être vrai après chaque itération (conservation).", ok: false, fb: "Si — la conservation est une des trois conditions." },
@@ -500,6 +485,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "Quelle est la complexité <strong>temporelle</strong> du tri fusion dans le pire cas ?",
+    cat: "complexité",
     opts: [
       { t: "O(n²)", ok: false, fb: "Non — O(n²) correspond aux tris naïfs (insertion, sélection, bulles)." },
       { t: "O(n log n)", ok: true,  fb: "✓ Exact ! Le tri fusion divise toujours en deux et fusionne en O(n) : T(n) = 2T(n/2) + O(n) ⟹ O(n log n)." },
@@ -508,6 +494,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "En OCaml, <code>let f x y = x + y</code> est une fonction :",
+    cat: "paradigme",
     opts: [
       { t: "À deux paramètres obligatoires, de type <code>int -> int -> int</code>.", ok: true,  fb: "✓ Correct ! En OCaml toutes les fonctions sont curryfiées : f prend x et renvoie une fonction qui prend y." },
       { t: "Qui doit être appelée avec un tuple <code>f (x, y)</code>.", ok: false, fb: "Non — cela serait la syntaxe pour <code>let f (x, y) = x + y</code> (déconstruction de tuple)." },
@@ -516,6 +503,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "Combien de bits occupe un <code>double</code> en C (norme IEEE 754) ?",
+    cat: "représentation",
     opts: [
       { t: "32 bits", ok: false, fb: "Non — 32 bits correspond à un <code>float</code> (simple précision)." },
       { t: "64 bits", ok: true,  fb: "✓ Exact ! Un double est sur 64 bits : 1 bit signe, 11 bits exposant, 52 bits mantisse." },
@@ -524,6 +512,7 @@ const ALL_QUESTIONS = [
   },
   {
     q: "Dans quelle structure de données la complexité de la recherche est-elle <strong>O(1)</strong> en moyenne ?",
+    cat: "complexité",
     opts: [
       { t: "Tableau trié", ok: false, fb: "Non — dans un tableau trié, la recherche par dichotomie est O(log n)." },
       { t: "Table de hachage (hashtable)", ok: true,  fb: "✓ Exact ! En moyenne (et avec une bonne fonction de hachage), la recherche dans une hashtable est O(1) amorti." },
@@ -537,87 +526,101 @@ let quizAnswered = 0;
 let quizScore = 0;
 const QUIZ_SIZE = 10;
 
+// BUG CORRIGÉ : userAnswers est maintenant déclaré et peuplé
+let userAnswers = [];
+
 function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
 
 function generateQuiz() {
-  // Pick QUIZ_SIZE questions randomly
-  activeQuiz = shuffle(ALL_QUESTIONS).slice(0, QUIZ_SIZE);
-  quizAnswered = 0;
-  quizScore = 0;
+    activeQuiz = shuffle(ALL_QUESTIONS).slice(0, QUIZ_SIZE);
+    quizAnswered = 0;
+    quizScore = 0;
+    // BUG CORRIGÉ : on initialise userAnswers avec la bonne taille
+    userAnswers = activeQuiz.map(() => ({ ok: null }));
 
-  document.getElementById('scorePanel').style.display = 'none';
-  document.getElementById('quizMeta').textContent = `${QUIZ_SIZE} questions — tirage aléatoire (${ALL_QUESTIONS.length} disponibles)`;
+    document.getElementById('scorePanel').style.display = 'none';
+    document.getElementById('quizMeta').textContent = `${QUIZ_SIZE} questions — tirage aléatoire (${ALL_QUESTIONS.length} disponibles)`;
 
-  const area = document.getElementById('quizArea');
-  area.innerHTML = '';
+    const area = document.getElementById('quizArea');
+    area.innerHTML = '';
 
-  activeQuiz.forEach((q, idx) => {
-    const shuffledOpts = shuffle(q.opts);
-    const qid = `dq${idx}`;
+    activeQuiz.forEach((q, idx) => {
+        const shuffledOpts = shuffle(q.opts);
+        const qid = `dq${idx}`;
 
-    const opts = shuffledOpts.map((opt, oi) => `
-      <div class="quiz-option" data-ok="${opt.ok}" data-fb="${escHtmlAttr(opt.fb)}" onclick="answerDyn('${qid}', this)">
+        const opts = shuffledOpts.map((opt, oi) => `
+      <div class="quiz-option" data-ok="${opt.ok}" data-fb="${escHtmlAttr(opt.fb)}" onclick="answerDyn('${qid}', ${idx}, this)">
         <div class="quiz-indicator"></div>
         ${opt.t}
       </div>`).join('');
 
-    area.innerHTML += `
+        area.innerHTML += `
       <div class="quiz-container" id="${qid}-wrap">
         <div class="quiz-title">Question ${idx + 1} / ${QUIZ_SIZE}</div>
         <div class="quiz-question">${q.q}</div>
         <div class="quiz-options" id="${qid}">${opts}</div>
         <div class="quiz-feedback" id="${qid}-fb"></div>
       </div>`;
-  });
+    });
 
-  timerReset();
-  timerStart();
+    timerReset();
+    timerStart();
 }
 
-function answerDyn(qid, optEl) {
-  const container = document.getElementById(qid);
-  if (container.dataset.answered) return;
-  container.dataset.answered = '1';
+// BUG CORRIGÉ : answerDyn reçoit maintenant l'index pour remplir userAnswers
+function answerDyn(qid, questionIdx, optEl) {
+    const container = document.getElementById(qid);
+    if (container.dataset.answered) return;
+    container.dataset.answered = '1';
 
-  const isCorrect = optEl.dataset.ok === 'true';
-  const feedback  = optEl.dataset.fb;
+    const isCorrect = optEl.dataset.ok === 'true';
+    const feedback = optEl.dataset.fb;
 
-  const opts = container.querySelectorAll('.quiz-option');
-  opts.forEach(o => { o.classList.add('answered'); o.onclick = null; });
-  optEl.classList.add(isCorrect ? 'correct' : 'wrong');
-  optEl.querySelector('.quiz-indicator').textContent = isCorrect ? '✓' : '✗';
-  if (!isCorrect) {
-    // show correct
-    opts.forEach(o => { if (o !== optEl && o.dataset.ok === 'true') o.classList.add('correct'); else if (o !== optEl) o.style.opacity = '.4'; });
-  }
+    // BUG CORRIGÉ : on enregistre la réponse dans userAnswers
+    userAnswers[questionIdx] = { ok: isCorrect };
 
-  const fb = document.getElementById(`${qid}-fb`);
-  fb.textContent = feedback;
-  fb.classList.add('visible');
-  fb.style.color = isCorrect ? 'var(--accent)' : '#f87171';
+    const opts = container.querySelectorAll('.quiz-option');
+    opts.forEach(o => { o.classList.add('answered'); o.onclick = null; });
+    optEl.classList.add(isCorrect ? 'correct' : 'wrong');
+    optEl.querySelector('.quiz-indicator').textContent = isCorrect ? '✓' : '✗';
+    if (!isCorrect) {
+        opts.forEach(o => {
+            if (o !== optEl && o.dataset.ok === 'true') o.classList.add('correct');
+            else if (o !== optEl) o.style.opacity = '.4';
+        });
+    }
 
-  if (isCorrect) quizScore++;
-  quizAnswered++;
+    const fb = document.getElementById(`${qid}-fb`);
+    fb.textContent = feedback;
+    fb.classList.add('visible');
+    fb.style.color = isCorrect ? 'var(--accent)' : '#ff4444';
 
-  if (quizAnswered === QUIZ_SIZE) showScore();
+    if (isCorrect) quizScore++;
+    quizAnswered++;
+
+    if (quizAnswered === QUIZ_SIZE) {
+        setTimeout(() => {
+            document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+        showScore();
+    }
 }
 
 // ═══════════════════════════════════════════════
-//  LOGIQUE MARKETING & SCORE (SCORE-TRIGGERED)
+//  LOGIQUE MARKETING & SCORE
 // ═══════════════════════════════════════════════
 
 function getMarketingContent(score, total) {
     const pct = (score / total) * 100;
-    
+
     if (pct < 70) {
-        // STRATÉGIE : Diagnostic pour score faible (ex: Hocine 5/10)
         return {
             title: "Besoin d'un coup de pouce ? 💡",
             message: `Ton score de ${score}/${total} montre que les bases du programme MP2I (C/OCaml) ne sont pas encore totalement ancrées. En prépa, ces lacunes peuvent vite devenir bloquantes pour les DS.`,
@@ -626,16 +629,14 @@ function getMarketingContent(score, total) {
             class: "warn"
         };
     } else if (pct < 100) {
-        // STRATÉGIE : Perfectionnement pour bon score
         return {
             title: "Vise l'excellence ! 🚀",
             message: `Bien joué ! Avec ${score}/${total}, tu maîtrises l'essentiel. Pour atteindre les notes sommitales aux concours (X/ENS), il faut maintenant travailler la rédaction et les cas particuliers.`,
             btnText: "Demander mes fiches de synthèse PDF",
-            btnLink: "#contact-section",
+            btnLink: "#card5",
             class: "success"
         };
     } else {
-        // STRATÉGIE : Challenge pour score parfait
         return {
             title: "Niveau Major ! 🏆",
             message: "10/10. Tu as une excellente maîtrise. Es-tu prêt à te confronter à des sujets de concours originaux et des annales corrigées ?",
@@ -646,21 +647,73 @@ function getMarketingContent(score, total) {
     }
 }
 
+// BUG CORRIGÉ : showScore() utilise désormais userAnswers (correctement peuplé)
+//               et la variable stats (plus summary qui n'existait pas)
 function showScore() {
     timerPause();
     const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
     const time = document.getElementById('timerDigits').textContent;
-    
+
+    // Analyse des erreurs par catégorie (stats, pas summary)
+    const stats = {};
+    const totalPerCat = {};
+
+    activeQuiz.forEach((q, idx) => {
+        totalPerCat[q.cat] = (totalPerCat[q.cat] || 0) + 1;
+        // BUG CORRIGÉ : userAnswers[idx] est maintenant toujours défini
+        if (userAnswers[idx] && !userAnswers[idx].ok) {
+            stats[q.cat] = (stats[q.cat] || 0) + 1;
+        }
+    });
+
     // Récupération du contenu marketing
     const marketing = getMarketingContent(quizScore, QUIZ_SIZE);
 
     // Mise à jour de l'affichage du score
     document.getElementById('scoreValue').textContent = `${quizScore} / ${QUIZ_SIZE} (${pct}%)`;
     document.getElementById('scoreTime').textContent = `Temps : ${time}`;
-    
-    // Injection du bloc Marketing personnalisé
+
+    // Construction de l'analyse par catégorie
+    let categoryAnalysisHtml = '';
+    if (Object.keys(stats).length > 0) {
+        // Tri par nombre d'erreurs décroissant
+        const sortedErrors = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+
+        const rows = sortedErrors.map(([cat, errCount]) => {
+            const total = totalPerCat[cat];
+            const ok = total - errCount;
+            const pctCat = Math.round((ok / total) * 100);
+            const label = CAT_LABELS[cat] || cat;
+            const advice = CAT_ADVICE[cat] || '';
+            const barColor = pctCat >= 70 ? 'var(--accent)' : pctCat >= 40 ? 'var(--warn)' : '#f87171';
+
+            return `
+            <div class="cat-row">
+              <div class="cat-info">
+                <span class="cat-name">${label}</span>
+                <span class="cat-score">${ok}/${total} correct</span>
+              </div>
+              <div class="cat-bar-wrap">
+                <div class="cat-bar-fill" style="width:${pctCat}%; background:${barColor};"></div>
+              </div>
+              ${errCount > 0 ? `<div class="cat-advice">💡 ${advice}</div>` : ''}
+            </div>`;
+        }).join('');
+
+        categoryAnalysisHtml = `
+        <div class="category-analysis">
+          <div class="cat-analysis-title">📊 Analyse par catégorie</div>
+          ${rows}
+        </div>`;
+    } else {
+        categoryAnalysisHtml = `<div class="category-analysis perfect"><div class="cat-analysis-title">✅ Score parfait sur toutes les catégories !</div></div>`;
+    }
+
+    // BUG CORRIGÉ : on écrit une seule fois dans marketing-cta-area,
+    //               avec à la fois l'analyse catégorielle et le bloc marketing
     const marketingArea = document.getElementById('marketing-cta-area');
     marketingArea.innerHTML = `
+        ${categoryAnalysisHtml}
         <div class="marketing-cta ${marketing.class}">
             <h3>${marketing.title}</h3>
             <p>${marketing.message}</p>
@@ -669,27 +722,14 @@ function showScore() {
     `;
 
     document.getElementById('scorePanel').style.display = 'block';
-    
-    // Petit délai pour laisser le DOM se mettre à jour avant le scroll
+
     setTimeout(() => {
         document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
 }
 
-/*
-function showScore() {
-  timerPause();
-  const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
-  const digits = document.getElementById('timerDigits');
-  document.getElementById('scoreValue').textContent = `${quizScore} / ${QUIZ_SIZE}  (${pct}%)`;
-  document.getElementById('scoreTime').textContent = `Temps : ${digits.textContent}`;
-  document.getElementById('scorePanel').style.display = 'block';
-  document.getElementById('scorePanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-*/
-
 function escHtmlAttr(s) {
-  return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ─── Timer ────────────────────────────────────────────────────────────────────
@@ -699,68 +739,72 @@ let timerRunning = false;
 let timerVisible = true;
 
 function timerStart() {
-  if (timerRunning) return;
-  timerRunning = true;
-  timerInterval = setInterval(() => {
-    timerSeconds++;
-    updateTimerDisplay();
-  }, 1000);
-  document.getElementById('btnPause').textContent = '⏸ Pause';
-  document.getElementById('btnPause').classList.remove('paused');
+    if (timerRunning) return;
+    timerRunning = true;
+    timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+    }, 1000);
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+    document.getElementById('btnPause').classList.remove('paused');
 }
 
 function timerPause() {
-  if (!timerRunning) return;
-  clearInterval(timerInterval);
-  timerRunning = false;
+    if (!timerRunning) return;
+    clearInterval(timerInterval);
+    timerRunning = false;
 }
 
 function timerToggle() {
-  if (timerRunning) {
-    timerPause();
-    document.getElementById('btnPause').textContent = '▶ Reprendre';
-    document.getElementById('btnPause').classList.add('paused');
-  } else {
-    timerStart();
-  }
+    if (timerRunning) {
+        timerPause();
+        document.getElementById('btnPause').textContent = '▶ Reprendre';
+        document.getElementById('btnPause').classList.add('paused');
+    } else {
+        timerStart();
+    }
 }
 
 function timerReset() {
-  timerPause();
-  timerSeconds = 0;
-  updateTimerDisplay();
-  document.getElementById('btnPause').textContent = '⏸ Pause';
-  document.getElementById('btnPause').classList.remove('paused');
+    timerPause();
+    timerSeconds = 0;
+    updateTimerDisplay();
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+    document.getElementById('btnPause').classList.remove('paused');
 }
 
 function timerToggleVisible() {
-  timerVisible = !timerVisible;
-  const d = document.getElementById('timerDigits');
-  d.classList.toggle('hidden-timer', !timerVisible);
-  document.getElementById('btnVisibility').textContent = timerVisible ? '👁 Masquer' : '👁 Afficher';
+    timerVisible = !timerVisible;
+    const d = document.getElementById('timerDigits');
+    d.classList.toggle('hidden-timer', !timerVisible);
+    document.getElementById('btnVisibility').textContent = timerVisible ? '👁 Masquer' : '👁 Afficher';
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-  const s = (timerSeconds % 60).toString().padStart(2, '0');
-  document.getElementById('timerDigits').textContent = `${m}:${s}`;
+    const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+    const s = (timerSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('timerDigits').textContent = `${m}:${s}`;
 }
-
-
 
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-    // Vérification de la session existante
     const stored = sessionStorage.getItem(AUTH_SESSION_KEY);
     let isValid = false;
-    
+
     if (stored) {
         try {
             const sessionData = JSON.parse(stored);
             if (sessionData.authenticated && Date.now() < sessionData.expires) {
                 isValid = true;
+                // Restaurer le prénom depuis la session
+                const savedName = sessionStorage.getItem('mp2i_user_name');
+                if (savedName) {
+                    currentUserName = savedName;
+                    const mainTitle = document.querySelector('h1');
+                    if (mainTitle) mainTitle.innerHTML = `Bonjour ${currentUserName},<br>Algorithmes et <em>Programmes</em>`;
+                }
             }
         } catch(e) {
             if (stored === '1') {
@@ -774,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     if (isValid) {
         const screen = document.getElementById('authScreen');
         const mainContent = document.getElementById('mainContent');
@@ -790,12 +834,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const authInput = document.getElementById('authInput');
         if (authInput) setTimeout(() => authInput.focus(), 100);
     }
-    
-    // Initialisation des sections et quiz
+
     setTimeout(() => {
         toggleCard('card1');
         generateQuiz();
         updateActiveNavLink();
+        addCopyButtons();
     }, 200);
 });
 
@@ -810,3 +854,77 @@ document.querySelectorAll('textarea.code-editor').forEach(ta => {
         }
     });
 });
+
+function sendResultEmail() {
+    const emailDest = "votre-email@exemple.com"; // À remplacer
+    const time = document.getElementById('timerDigits')?.textContent || "non chronométré";
+    // BUG CORRIGÉ : currentUserName est maintenant une variable globale accessible ici
+    const subject = `Résultats Quiz MP2I - ${currentUserName}`;
+    const body = `Bonjour,\n\nJe suis ${currentUserName}.\nJ'ai terminé le module "Algorithmes et Programmes".\nMon score final est de : ${quizScore} / ${QUIZ_SIZE}.\nTemps utilisé : ${time}.\n\nMerci de me recontacter pour la suite.`;
+    window.location.href = `mailto:${emailDest}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Inactivité
+let inactivityTimer;
+const FOUR_HOURS = 4 * 60 * 60 * 1000;
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(logoutUser, FOUR_HOURS);
+}
+
+function logoutUser() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    location.reload();
+}
+
+['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
+    document.addEventListener(name, resetInactivityTimer, true);
+});
+
+document.addEventListener('visibilitychange', () => {
+    // Visibility API — extension possible
+});
+
+// BUG CORRIGÉ : addCopyButtons cible maintenant les toolbars des panneaux textarea
+function addCopyButtons() {
+    document.querySelectorAll('.code-toolbar').forEach(toolbar => {
+        // Eviter les doublons si appelé plusieurs fois
+        if (toolbar.querySelector('.btn-copy')) return;
+
+        const panel = toolbar.closest('.code-panel');
+        if (!panel) return;
+        const ta = panel.querySelector('textarea.code-editor');
+        if (!ta) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-copy';
+        btn.innerHTML = '⎘ Copier';
+        btn.title = 'Copier le code';
+
+        btn.onclick = () => {
+            navigator.clipboard.writeText(ta.value).then(() => {
+                btn.innerHTML = '✓ Copié !';
+                btn.classList.add('btn-copy-ok');
+                setTimeout(() => {
+                    btn.innerHTML = '⎘ Copier';
+                    btn.classList.remove('btn-copy-ok');
+                }, 2000);
+            }).catch(() => {
+                // Fallback pour les navigateurs sans clipboard API
+                ta.select();
+                document.execCommand('copy');
+                btn.innerHTML = '✓ Copié !';
+                setTimeout(() => btn.innerHTML = '⎘ Copier', 2000);
+            });
+        };
+
+        // Insérer avant le spacer ou en fin de toolbar
+        const spacer = toolbar.querySelector('.toolbar-spacer');
+        if (spacer) {
+            toolbar.insertBefore(btn, spacer.nextSibling);
+        } else {
+            toolbar.appendChild(btn);
+        }
+    });
+}
