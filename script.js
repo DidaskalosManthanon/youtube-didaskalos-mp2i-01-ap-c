@@ -2,7 +2,7 @@
 //  AUTHENTIFICATION AVEC HASH SHA-256
 // ═══════════════════════════════════════════════
 
-const CORRECT_PASSWORD_HASH = '08d06b1551775bf6ea2fcc4d8852ac9c07f3d1bce830806b851f1498cd763acc';
+const CORRECT_PASSWORD_HASH = '160b1a4d190be225c9b459a550b907c42580bd2784af2e73b654032638b1e361';
 const AUTH_SESSION_KEY = 'mp2i_auth';
 const SESSION_DURATION = 8 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
